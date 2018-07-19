@@ -4,6 +4,10 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <string>
+#include <stdexcept>
+#include <string.h>
+#include <vector>
 
 
 namespace tls
@@ -64,10 +68,55 @@ namespace tls
         if (::connect(GetSocketId(), (struct sockaddr*)&serverAddr, sizeof(serverAddr)) != 0)
         {
             CloseSocket();
-            std::string err = "ClientSocket error in connect";
+            std::string err = "ClientSocket error in connect - ";
             err += strerror(errno);
             throw std::runtime_error(err);
         }
+    }
+
+    void ClientSocket::PutMessage(
+        const std::string& msg
+    )
+    {
+        size_t bytesWritten = 0;
+
+        while (bytesWritten < msg.size())
+        {
+            ssize_t ret = ::write(GetSocketId(), msg.c_str() + bytesWritten, msg.size() - bytesWritten);
+            if (ret == -1)
+            {
+                std::string err = "PutMessage error in ClientSocket - ";
+                err += strerror(errno);
+                throw std::runtime_error(err);
+            }
+            bytesWritten += static_cast<size_t>(ret);
+        }
+    }
+
+    void ClientSocket::GetMessage(
+        std::string& msg
+    )
+    {
+        size_t bytesRead = 0;
+        std::vector<uint8_t> buf;
+        for (;;)
+        {
+            ssize_t ret = ::read(GetSocketId(), buf.data() + bytesRead, ClientSocket::MAX_READ_SIZE);
+            if (ret == -1)
+            {
+                std::string err = "GetMessage error in ClientSocket - ";
+                err += strerror(errno);
+                throw std::runtime_error(err);
+            }
+            else if (ret == 0)
+            {
+                break;
+            }
+            bytesRead += static_cast<size_t>(ret);
+        }
+
+        // do we need to copy here?
+        msg.assign(buf.begin(), buf.end());
     }
 
 }   // tls

@@ -48,13 +48,16 @@ namespace tls
             int port
         );
 
-        bool GetMessage(
+        void GetMessage(
             std::string& msg
         );
 
         void PutMessage(
             const std::string& msg
         );
+    
+    private:
+        static int constexpr MAX_READ_SIZE = 1024;
     };
 
 }   //  tls
