@@ -1,4 +1,6 @@
-A sample project illustrating how to perform unit testing with GoogleTest and CMake
+### TlsProtocol
+Sample implementation of TLS
+
 
 ##Building
 
@@ -21,4 +23,3 @@ or
 build/test/testfoo/testfoo
 ~~~
 
-Refer to [this blog post](http://kaizou.org/2014/11/gtest-cmake/) for a detailed explaination of how it works.
