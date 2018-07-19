@@ -2,7 +2,7 @@
 Sample implementation of TLS
 
 
-##Building
+## Building
 
 ~~~
 mkdir build
@@ -11,7 +11,7 @@ cmake ..
 make
 ~~~
 
-##Running
+## Running
 
 ~~~
 cd build && make test

@@ -8,6 +8,9 @@
 
 namespace tls
 {
+    /*
+     * Definitions for BaseSocket methods
+     */
     BaseSocket::BaseSocket(
         int socketId
     ) : m_socketId(socketId)
@@ -43,6 +46,28 @@ namespace tls
     int BaseSocket::GetSocketId() const
     {
         return m_socketId;
+    }
+
+    /*
+     * Definitions for ClientSocket methods
+     */
+    ClientSocket::ClientSocket(
+        const std::string& hostname,
+        int port
+    ) : BaseSocket(::socket(PF_INET, SOCK_STREAM, 0))
+    {
+        struct sockaddr_in serverAddr;
+        serverAddr.sin_family = AF_INET;
+        serverAddr.sin_port = htons(port);
+        serverAddr.sin_addr.s_addr = inet_addr(hostname.c_str());
+
+        if (::connect(GetSocketId(), (struct sockaddr*)&serverAddr, sizeof(serverAddr)) != 0)
+        {
+            CloseSocket();
+            std::string err = "ClientSocket error in connect";
+            err += strerror(errno);
+            throw std::runtime_error(err);
+        }
     }
 
 }   // tls
