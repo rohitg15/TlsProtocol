@@ -1,6 +1,7 @@
 #include "bar.h"
 #include "foo.h"
 #include "socket.h"
+#include "record.h"
 
 int main(int argc, char *argv[])
 {
