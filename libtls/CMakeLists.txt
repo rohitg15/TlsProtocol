@@ -1,5 +1,6 @@
 set(libtls_SRCS
     record.h
+    clienthello.h
     record.cpp
 )
 
