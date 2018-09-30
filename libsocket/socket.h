@@ -2,6 +2,7 @@
 #define _SOCKET_H_
 
 #include <string>
+#include <vector>
 
 namespace tls
 {
@@ -49,11 +50,11 @@ namespace tls
         );
 
         void GetMessage(
-            std::string& msg
+            std::vector<uint8_t>& msg
         );
 
         void PutMessage(
-            const std::string& msg
+            const std::vector<uint8_t>& msg
         );
     
     private:

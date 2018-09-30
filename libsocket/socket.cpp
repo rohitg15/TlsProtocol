@@ -75,14 +75,14 @@ namespace tls
     }
 
     void ClientSocket::PutMessage(
-        const std::string& msg
+        const std::vector<uint8_t>& msg
     )
     {
         size_t bytesWritten = 0;
 
         while (bytesWritten < msg.size())
         {
-            ssize_t ret = ::write(GetSocketId(), msg.c_str() + bytesWritten, msg.size() - bytesWritten);
+            ssize_t ret = ::write(GetSocketId(), msg.data() + bytesWritten, msg.size() - bytesWritten);
             if (ret == -1)
             {
                 std::string err = "PutMessage error in ClientSocket - ";
@@ -94,14 +94,14 @@ namespace tls
     }
 
     void ClientSocket::GetMessage(
-        std::string& msg
+        std::vector<uint8_t>& msg
     )
     {
         size_t bytesRead = 0;
-        std::vector<uint8_t> buf;
+        // std::vector<uint8_t> buf;
         for (;;)
         {
-            ssize_t ret = ::read(GetSocketId(), buf.data() + bytesRead, ClientSocket::MAX_READ_SIZE);
+            ssize_t ret = ::read(GetSocketId(), msg.data() + bytesRead, ClientSocket::MAX_READ_SIZE);
             if (ret == -1)
             {
                 std::string err = "GetMessage error in ClientSocket - ";
@@ -116,7 +116,7 @@ namespace tls
         }
 
         // do we need to copy here?
-        msg.assign(buf.begin(), buf.end());
+        // msg.assign(buf.begin(), buf.end());
     }
 
 }   // tls
