@@ -11,7 +11,7 @@ namespace tls
         uint8_t minor;
     }__attribute__((packed));
 
-    enum ContentType
+    enum class ContentType : uint8_t
     {
         ChangeCipherSpec = 20,
         Alert = 21,
@@ -19,9 +19,9 @@ namespace tls
         ApplicationData = 23
     };
 
-    struct TlsPlaintext
+    struct TlsMessage
     {
-        uint8_t type;               // ContentType
+        enum ContentType type;               // ContentType
         ProtocolVersion version;
         uint16_t length;
         uint8_t fragment[0];        // variable length

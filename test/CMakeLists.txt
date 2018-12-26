@@ -41,4 +41,4 @@ include_directories("${source_dir}/googletest/include"
 
 add_subdirectory(testfoo)
 add_subdirectory(testsocket)
-add_subdirectory(testtls)
+# add_subdirectory(testtls)
