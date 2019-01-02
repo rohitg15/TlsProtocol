@@ -6,6 +6,7 @@ set(libtls13_SRCS
     marshal.h
     utils.h
     record.cpp
+    types.cpp
 )
 
 # Declare the library

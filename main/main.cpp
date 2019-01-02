@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
     ClientHello ch;
     CipherSuites cs;
     cs.length = 125;
-    Marshal::Encode<CipherSuites>(cs);
+    // Marshal::Encode<CipherSuites>(cs);
 
     return 0;   
 

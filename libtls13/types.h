@@ -3,8 +3,29 @@
 
 
 #include <stdint.h>
+#include <vector>
 
-enum class ProtocolVersion : uint16_t
+struct bits_24
+{
+    uint32_t val:24;
+};
+using uint24_t = bits_24;
+
+
+enum class RecordTypeEnum : uint8_t
+{
+    HANDSHAKE = 0x16,
+    ALERT = 0x20
+};
+
+
+enum class HandshakeTypeEnum : uint8_t
+{
+    CLIENT_HELLO = 0x01,
+    SERVER_HELLO = 0x02
+};
+
+enum class ProtocolVersionEnum : uint16_t
 {
     TLS_1_0 = 0x0301,
     TLS_1_1 = 0x0302,
@@ -12,7 +33,7 @@ enum class ProtocolVersion : uint16_t
     TLS_1_3 = 0x0304
 };
 
-enum class CipherSuite : uint16_t {
+enum class CipherSuiteEnum : uint16_t {
   TLS_AES_128_GCM_SHA256 = 0x1301,
   TLS_AES_256_GCM_SHA384 = 0x1302,
   TLS_CHACHA20_POLY1305_SHA256 = 0x1303,
@@ -22,9 +43,21 @@ enum class CipherSuite : uint16_t {
 };
 
 
-using Random = std::array<uint8_t, 32>;
+// using Random = std::array<uint8_t, 32>;
 
-enum class ExtensionType : uint16_t
+
+struct Record
+{
+    RecordTypeEnum recordType;
+    ProtocolVersionEnum compatVersion;
+    uint16_t recordPayloadLength;
+
+    virtual uint32_t GetSize();
+};
+
+
+
+enum class ExtensionEnum : uint16_t
 {
     server_name = 0,
     supported_groups = 10,
@@ -45,9 +78,20 @@ enum class ExtensionType : uint16_t
     compress_certificate = 0xff02
 };
 
+// length-encoded vector type
+template <typename T, typename U>
+struct LVector
+{
+    U len_;
+    std::vector<T> buf_;
+};
+
+
+
+
 struct Extension
 {
-    ExtensionType extension_type;
+    ExtensionEnum extension_type;
     uint16_t length;
     std::vector<uint8_t> data;      //  <0..2^16-1>
 };
@@ -55,13 +99,13 @@ struct Extension
 struct SessionId
 {
     const uint8_t length = 32;
-    std::array<uint8_t, 32> session_id;
+    std::vector<uint8_t> session_id;
 };
 
 struct CipherSuites
 {
     uint16_t length;
-    std::vector<CipherSuite> ciphers;
+    std::vector<CipherSuiteEnum> ciphers;
 };
 
 struct Compression
@@ -73,7 +117,35 @@ struct Compression
 struct Extensions
 {
     uint16_t length;
-    std::vector<Extension> extensions;
+    std::vector<ExtensionEnum> extensions;
+};
+
+class TlsBuffer
+{
+    public:
+        void AddByte(
+            uint8_t byte
+        );
+
+        void AddTwoBytes(
+            uint16_t data
+        );
+
+        void AddThreeBytes(
+            uint24_t data
+        );
+
+        void AddFourBytes(
+            uint32_t data
+        );
+
+        void AddVector(
+            const std::vector<uint8_t>&& data
+        );
+
+        std::vector<uint8_t> GetBytes();
+    private:
+        std::vector<uint8_t> buf_;
 };
 
 #endif  //  _TYPES_H_

@@ -9,12 +9,41 @@
 
 struct ClientHello
 {
-    ProtocolVersion legacy_version = ProtocolVersion::TLS_1_2;
-    Random random;
+    ProtocolVersionEnum legacy_version = ProtocolVersionEnum::TLS_1_2;
+    // Random random;
     SessionId legacy_session_id;
     CipherSuites ciphers;
     Compression compression;
     Extensions extensions;
+
+    uint32_t GetSize();
+    std::vector<uint8_t> Encode();
+    TlsBuffer buf_;
 };
+
+uint32_t ClientHello::GetSize()
+{
+    return sizeof(ProtocolVersionEnum);
+        //    legacy_session_id.GetSize() +
+        //    ciphers.GetSize() +
+        //    compression.GetSize() +
+        //    extensions.GetSize();
+}
+
+std::vector<uint8_t> ClientHello::Encode()
+{
+    // write legacy protocol version
+    buf_.AddTwoBytes(static_cast<uint16_t>(legacy_version));
+    // // write legacy session id
+    // buf_.AddVector(legacy_session_id.Encode());
+    // // write ciphers
+    // buf_.AddVector(ciphers.Encode());
+    // // write compression
+    // buf_.AddVector(compression.Encode());
+    // // write extensions
+    // buf_.AddVector(extensions.Encode());
+    return buf_.GetBytes();
+}
+
 
 #endif  //  _TLS_MESSAGES_H_
