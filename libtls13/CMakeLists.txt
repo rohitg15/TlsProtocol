@@ -9,6 +9,7 @@ set(libtls13_SRCS
     types.cpp
 )
 
+
 # Declare the library
 add_library(libtls13 STATIC
     ${libtls13_SRCS}
@@ -16,6 +17,7 @@ add_library(libtls13 STATIC
 
 target_link_libraries(libtls13
     libsocket
+    libcrypto
 )
 
 # Specify here the include directories exported

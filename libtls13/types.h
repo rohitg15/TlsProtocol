@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include <vector>
 #include <array>
+#include "random.h"
+
 
 struct bits_24
 {
@@ -120,25 +122,70 @@ struct Extension
 
 struct TlsRandom
 {
-    std::array<uint8_t, 32> random;
+    std::array<uint8_t, 32> rnd;
+
+    TlsRandom()
+    : rnd(Crypto::Random<32>::GetRandomBytes())
+    {
+    }
+
+    uint32_t GetSize()
+    {
+        return 32 * sizeof(uint8_t);
+    }
 };
 
 struct SessionId
 {
     const uint8_t length = 32;
     std::array<uint8_t, 32> session_id;
+
+    // legacy field
+    SessionId()
+    {}
+
+    uint32_t GetSize()
+    {
+        return sizeof(length) + (32 * sizeof(uint8_t));
+    }
 };
 
 struct CipherSuites
 {
     uint16_t length;
     std::vector<CipherSuiteEnum> ciphers;
+
+    CipherSuites()
+    :   length(3 * sizeof(uint16_t)),
+        ciphers(std::vector<CipherSuiteEnum>{
+            CipherSuiteEnum::TLS_AES_256_GCM_SHA384,
+            CipherSuiteEnum::TLS_AES_128_GCM_SHA256,
+            CipherSuiteEnum::TLS_CHACHA20_POLY1305_SHA256
+        })
+    {}
+
+    CipherSuites(
+        const std::vector<CipherSuiteEnum>& ciphersuites
+    ) : 
+        length(ciphersuites.size() * sizeof(uint16_t)),
+        ciphers(ciphersuites)
+    {}
+
+    uint32_t GetSize()
+    {
+        return sizeof(length) + (ciphers.size() * sizeof(uint16_t));
+    }
 };
 
 struct Compression
 {
     const uint8_t length = 1;
     const uint8_t method = 0x00;
+
+    uint32_t GetSize()
+    {
+        return sizeof(length) + sizeof(method);
+    }
 };
 
 struct Extensions
