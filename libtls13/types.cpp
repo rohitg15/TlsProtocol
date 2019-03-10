@@ -1,6 +1,49 @@
 #include "types.h"
 #include "utils.h"
 
+
+TlsBuffer::TlsBuffer(
+    const TlsBuffer& other
+) : 
+    buf_(other.buf_)
+{}
+
+TlsBuffer& TlsBuffer::operator=(
+    const TlsBuffer& rhs
+)
+{
+    if (this != &rhs)
+    {
+        buf_ = rhs.buf_;
+    }
+    return *this;
+}
+
+TlsBuffer::TlsBuffer(
+    const TlsBuffer&& other
+) : 
+    buf_(std::move(other.buf_))
+{}
+
+TlsBuffer& TlsBuffer::operator=(
+    const TlsBuffer&& rhs
+)
+{
+    if (this != &rhs)
+    {
+        buf_ = std::move(rhs.buf_);
+    }
+    return *this;
+}
+
+TlsBuffer& TlsBuffer::operator+=(
+    const TlsBuffer& rhs
+)
+{
+    buf_.insert(buf_.end(), rhs.buf_.begin(), rhs.buf_.end());
+    return *this;
+}
+
 void TlsBuffer::AddByte(
     uint8_t byte
 )
@@ -41,9 +84,12 @@ void TlsBuffer::AddVector(
     buf_.insert(buf_.end(), data.begin(), data.end());
 }
 
+
 std::vector<uint8_t> TlsBuffer::GetBytes()
 {
-    return buf_;
+    std::vector<uint8_t> buf;
+    std::copy(buf_.begin(), buf_.end(), buf.begin());
+    return buf;
 }
 
 uint32_t Record::GetSize()

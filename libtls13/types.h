@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 #include <vector>
+#include <array>
 
 struct bits_24
 {
@@ -21,8 +22,17 @@ enum class RecordTypeEnum : uint8_t
 
 enum class HandshakeTypeEnum : uint8_t
 {
-    CLIENT_HELLO = 0x01,
-    SERVER_HELLO = 0x02
+    CLIENT_HELLO = 1,
+    SERVER_HELLO = 2,
+    NEW_SESSION_TICKET = 4,
+    END_OF_EARLY_DATA = 5,
+    ENCRYPTED_EXTENSIONS = 8,
+    CERTIFICATE = 11,
+    CERTIFICATE_REQUEST = 13,
+    CERTIFICATE_VERIFY = 15,
+    FINISHED = 20,
+    KEY_UPDATE = 24,
+    MESSAGE_HASH = 254,
 };
 
 enum class ProtocolVersionEnum : uint16_t
@@ -43,21 +53,8 @@ enum class CipherSuiteEnum : uint16_t {
 };
 
 
-// using Random = std::array<uint8_t, 32>;
 
-
-struct Record
-{
-    RecordTypeEnum recordType;
-    ProtocolVersionEnum compatVersion;
-    uint16_t recordPayloadLength;
-
-    virtual uint32_t GetSize();
-};
-
-
-
-enum class ExtensionEnum : uint16_t
+enum class ExtensionTypeEnum : uint16_t
 {
     server_name = 0,
     supported_groups = 10,
@@ -78,6 +75,13 @@ enum class ExtensionEnum : uint16_t
     compress_certificate = 0xff02
 };
 
+// using Random = std::array<uint8_t, 32>;
+
+
+
+
+
+
 // length-encoded vector type
 template <typename T, typename U>
 struct LVector
@@ -86,20 +90,43 @@ struct LVector
     std::vector<T> buf_;
 };
 
+struct Record
+{
+    RecordTypeEnum recordType;
+    ProtocolVersionEnum compatVersion;
+    uint16_t recordPayloadLength;
 
+    // record payload
+    
+    virtual uint32_t GetSize();
+};
+
+
+struct Handshake : public Record
+{
+    HandshakeTypeEnum msgType;
+    uint24_t handshakePayloadlength;
+    
+    // handshake message 
+};
 
 
 struct Extension
 {
-    ExtensionEnum extension_type;
+    ExtensionTypeEnum extensionType;
     uint16_t length;
     std::vector<uint8_t> data;      //  <0..2^16-1>
+};
+
+struct TlsRandom
+{
+    std::array<uint8_t, 32> random;
 };
 
 struct SessionId
 {
     const uint8_t length = 32;
-    std::vector<uint8_t> session_id;
+    std::array<uint8_t, 32> session_id;
 };
 
 struct CipherSuites
@@ -117,12 +144,30 @@ struct Compression
 struct Extensions
 {
     uint16_t length;
-    std::vector<ExtensionEnum> extensions;
+    std::vector<Extension> extensions;
 };
 
 class TlsBuffer
 {
     public:
+        TlsBuffer() = default;
+        
+        TlsBuffer(
+            const TlsBuffer&
+        );
+
+        TlsBuffer& operator=(
+            const TlsBuffer&
+        );
+
+        TlsBuffer(
+            const TlsBuffer&&
+        );
+
+        TlsBuffer& operator=(
+            const TlsBuffer&&
+        );
+
         void AddByte(
             uint8_t byte
         );
@@ -142,6 +187,20 @@ class TlsBuffer
         void AddVector(
             const std::vector<uint8_t>&& data
         );
+
+        TlsBuffer& operator+=(
+            const TlsBuffer& rhs
+        );
+
+        friend TlsBuffer&& operator+(
+            const TlsBuffer& lhs,
+            const TlsBuffer rhs
+        )
+        {
+            TlsBuffer buf {lhs};
+            buf += rhs;
+            return std::move(buf);
+        }
 
         std::vector<uint8_t> GetBytes();
     private:
