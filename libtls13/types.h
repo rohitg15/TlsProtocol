@@ -11,6 +11,10 @@
 struct bits_24
 {
     uint32_t val:24;
+
+    bits_24(uint32_t v)
+    : val(v)
+    {};
 };
 using uint24_t = bits_24;
 
@@ -39,19 +43,19 @@ enum class HandshakeTypeEnum : uint8_t
 
 enum class ProtocolVersionEnum : uint16_t
 {
-    TLS_1_0 = 0x0301,
-    TLS_1_1 = 0x0302,
-    TLS_1_2 = 0x0303,
-    TLS_1_3 = 0x0304
+    TLS_1_0 = 769,
+    TLS_1_1 = 770,
+    TLS_1_2 = 771,
+    TLS_1_3 = 772
 };
 
 enum class CipherSuiteEnum : uint16_t {
-  TLS_AES_128_GCM_SHA256 = 0x1301,
-  TLS_AES_256_GCM_SHA384 = 0x1302,
-  TLS_CHACHA20_POLY1305_SHA256 = 0x1303,
+  TLS_AES_128_GCM_SHA256 = 19 << 8 + 1,
+  TLS_AES_256_GCM_SHA384 = 19 << 8 + 2,
+  TLS_CHACHA20_POLY1305_SHA256 = 19 << 8 + 3,
 
   // experimental cipher suites
-  TLS_AES_128_OCB_SHA256_EXPERIMENTAL = 0xFF01
+//   TLS_AES_128_OCB_SHA256_EXPERIMENTAL = 0xFF01
 };
 
 
@@ -99,26 +103,25 @@ struct Record
     uint16_t recordPayloadLength;
 
     // record payload
-    
+    Record(
+        RecordTypeEnum rType,
+        ProtocolVersionEnum protVersion
+    );
     virtual uint32_t GetSize();
 };
 
 
 struct Handshake : public Record
 {
-    HandshakeTypeEnum msgType;
-    uint24_t handshakePayloadlength;
+    HandshakeTypeEnum handshakeMsgType;
+    uint24_t handshakePayloadLength;
     
-    // handshake message 
+    // handshake message
+    Handshake(
+        HandshakeTypeEnum handshakeType
+    );
 };
 
-
-struct Extension
-{
-    ExtensionTypeEnum extensionType;
-    uint16_t length;
-    std::vector<uint8_t> data;      //  <0..2^16-1>
-};
 
 struct TlsRandom
 {
@@ -187,6 +190,14 @@ struct Compression
         return sizeof(length) + sizeof(method);
     }
 };
+
+struct Extension
+{
+    ExtensionTypeEnum extensionType;
+    uint16_t length;
+    std::vector<uint8_t> data;      //  <0..2^16-1>
+};
+
 
 struct Extensions
 {

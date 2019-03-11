@@ -1,6 +1,9 @@
 #ifndef _UTILS_H_
 #define _UTILS_H_
 
+#include <iostream>
+#include <algorithm>
+
 class Utils
 {
 
@@ -28,16 +31,18 @@ T Utils::SwapEndian(
     T val
 )
 {
-    auto size = sizeof(val);
+    // auto size = sizeof(val);
+    //std::cout << " size : " << size << std::endl;
     T temp = 0;
-    while (size--)
+    while (val > 0)
     {
         temp |= (val & 0xFF);
-        val >>= 1;
-        temp <<= 1;
+        temp <<= 8;
+        val >>= 8;
     }
     return temp;
 }
+
 
 template <typename T>
 std::vector<uint8_t> Utils::ToBytes(
@@ -46,11 +51,12 @@ std::vector<uint8_t> Utils::ToBytes(
 {
     auto length = sizeof(val);
     std::vector<uint8_t> data(length, 0x00);
-    for (auto it = data.rbegin(); it!= data.rend(); ++it)
+    for (auto it = data.begin(); it!= data.end(); ++it)
     {
         *it = (val & 0xFF);
-        val >>= 1;
+        val >>= 8;
     }
+    
     return data;
 }
 
@@ -60,8 +66,10 @@ std::vector<uint8_t> Utils::GetBigEndianBytes(
     T val
 )
 {
-    auto big_endian = Utils::SwapEndian(val);
-    return Utils::ToBytes(big_endian);
+    //auto bigEndian = Utils::SwapEndian<T>(val);
+    std::vector<uint8_t> bytes = Utils::ToBytes(val);
+    std::reverse(bytes.begin(), bytes.end());
+    return bytes;
 }
 
 #endif  //  _UTILS_H_

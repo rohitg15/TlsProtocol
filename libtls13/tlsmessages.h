@@ -16,10 +16,61 @@ struct ClientHello : public Handshake
     Compression compression;
     Extensions extensions;
 
+
+    ClientHello();
+    ClientHello(
+        const std::vector<CipherSuiteEnum>& cipherSuites
+    );
+
     uint32_t GetSize();
     std::vector<uint8_t> Encode();
     TlsBuffer buf_;
 };
+
+ClientHello::ClientHello()
+:   Handshake(HandshakeTypeEnum::CLIENT_HELLO) 
+{
+    // initialize default extensions here
+
+    // initialize handshake parameters
+    uint32_t hslen = 0;
+    hslen += sizeof(ProtocolVersionEnum);
+    hslen += random.GetSize();
+    hslen += legacySessionId.GetSize();
+    hslen += ciphers.GetSize();
+    hslen += compression.GetSize();
+    handshakePayloadLength.val = hslen;
+
+    // NOTE: add extensions size here
+
+    // initialize record parameters
+    recordPayloadLength = 0;
+    recordPayloadLength += sizeof(handshakeMsgType);
+    recordPayloadLength += handshakePayloadLength.val;
+
+}
+
+ClientHello::ClientHello(
+    const std::vector<CipherSuiteEnum>& cipherSuites
+) :     Handshake(HandshakeTypeEnum::CLIENT_HELLO),
+        ciphers(cipherSuites)
+{
+    // initialize handshake parameters
+    uint32_t hslen = 0;
+    hslen += sizeof(ProtocolVersionEnum);
+    hslen += random.GetSize();
+    hslen += legacySessionId.GetSize();
+    hslen += ciphers.GetSize();
+    hslen += compression.GetSize();
+    handshakePayloadLength.val = hslen;
+
+    // NOTE: add extensions size here
+
+    // initialize record parameters
+    recordPayloadLength = 0;
+    recordPayloadLength += sizeof(handshakeMsgType);
+    recordPayloadLength += handshakePayloadLength.val;
+}
 
 uint32_t ClientHello::GetSize()
 {

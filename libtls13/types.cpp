@@ -1,6 +1,26 @@
 #include "types.h"
 #include "utils.h"
 
+#include <iostream>
+
+
+Record::Record(
+    RecordTypeEnum rType,
+    ProtocolVersionEnum protVersion
+)
+:   recordType(rType),
+    compatVersion(protVersion),
+    recordPayloadLength(0)
+{}
+
+Handshake::Handshake(
+    HandshakeTypeEnum handshakeType
+) :
+    Record(RecordTypeEnum::HANDSHAKE, ProtocolVersionEnum::TLS_1_2),
+    handshakeMsgType(handshakeType),
+    handshakePayloadLength(0)
+{}
+
 
 TlsBuffer::TlsBuffer(
     const TlsBuffer& other
@@ -65,7 +85,10 @@ void TlsBuffer::AddThreeBytes(
 {
     auto buf = Utils::GetBigEndianBytes<uint32_t>(data.val);
     // discard last byte in the vector since we are only looking at 24 bits
+   
+    std::reverse(buf.begin(), buf.end());
     buf.pop_back();
+    std::reverse(buf.begin(), buf.end());
     AddVector(std::move(buf));
 }
 
@@ -87,7 +110,7 @@ void TlsBuffer::AddVector(
 
 std::vector<uint8_t> TlsBuffer::GetBytes()
 {
-    std::vector<uint8_t> buf;
+    std::vector<uint8_t> buf (buf_.size(), 0x00);
     std::copy(buf_.begin(), buf_.end(), buf.begin());
     return buf;
 }

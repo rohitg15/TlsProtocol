@@ -33,7 +33,7 @@ TlsBuffer WireSerializer::Encode<Record>(
 )
 {
     TlsBuffer buf;
-    buf.AddByte(static_cast<uint8_t>(obj.recordType));
+    buf.AddByte(static_cast<uint8_t>(obj.recordType)); 
     buf.AddTwoBytes(static_cast<uint16_t>(obj.compatVersion));
     buf.AddTwoBytes(obj.recordPayloadLength);
     return std::move(buf);
@@ -45,8 +45,21 @@ TlsBuffer WireSerializer::Encode<Handshake>(
 )
 {
     TlsBuffer buf;
-    buf.AddByte(static_cast<uint8_t>(handshake.msgType));
-    buf.AddThreeBytes(handshake.handshakePayloadlength);
+    buf.AddByte(static_cast<uint8_t>(handshake.handshakeMsgType));
+    buf.AddThreeBytes(handshake.handshakePayloadLength);
+    return std::move(buf);
+}
+
+template <>
+TlsBuffer WireSerializer::Encode<TlsRandom>(
+    const TlsRandom& tlsRandom
+)
+{
+    TlsBuffer buf;
+    for (auto const& b : tlsRandom.rnd)
+    {
+        buf.AddByte(b);
+    }
     return std::move(buf);
 }
 
@@ -65,7 +78,8 @@ TlsBuffer WireSerializer::Encode<ClientHello>(
 
     // serialize client hello message
     buf.AddTwoBytes(static_cast<uint16_t>(ch.legacyVersion));
-    
+    buf += std::move(WireSerializer::Encode<TlsRandom>(ch.random));
+
     return std::move(buf);
 }
 

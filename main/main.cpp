@@ -30,9 +30,13 @@ int main(int argc, char *argv[])
     // std::cout << sizeof(static_cast<tls::TlsMessage>(*pTlsRecord));
 
     ClientHello ch;
-    CipherSuites cs;
-    cs.length = 125;
-    // Marshal::Encode<CipherSuites>(cs);
+    TlsBuffer buf = WireSerializer::Encode<ClientHello>(ch);
+    std::vector<uint8_t> bytes = buf.GetBytes();
+    for (auto const& b : bytes)
+    {
+        std::cout << std::hex << static_cast<uint32_t>(b) << " ";
+    }
+    std::cout << std::endl;
 
     return 0;   
 
